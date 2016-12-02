@@ -5,7 +5,7 @@ import com.sun.org.apache.xpath.internal.operations.String;
 import java.util.ArrayList;
 
 /**
- * Created by Gabrysia on 02.12.2016..
+ * Created by Gabrysia on 02.12.2016.
  */
 public class Artykuł implements Podzielalne {
 
