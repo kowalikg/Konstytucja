@@ -1,7 +1,5 @@
 package dokumentyPrawne;
 
-import com.sun.org.apache.xpath.internal.operations.String;
-
 import java.util.ArrayList;
 
 /**
@@ -11,7 +9,7 @@ public class Rozdział implements Podzielalne {
 
     private int chapterNr;
 
-    ArrayList<Artykuł> articles = new ArrayList<>();
+    ArrayList<Article> articles = new ArrayList<>();
 
     @Override
     public void show() {

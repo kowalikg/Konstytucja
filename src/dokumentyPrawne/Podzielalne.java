@@ -1,7 +1,5 @@
 package dokumentyPrawne;
 
-import java.util.ArrayList;
-
 /**
  * Created by Gabrysia on 02.12.2016.
  */
