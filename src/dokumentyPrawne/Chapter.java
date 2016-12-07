@@ -16,7 +16,7 @@ public class Chapter implements Dividable{
     }
     @Override
     public void show() {
-        String currentTitle = "";
+
         System.out.println("Rozdział " + chapterNr);
         Iterator i = articles.iterator();
         while(i.hasNext()){
