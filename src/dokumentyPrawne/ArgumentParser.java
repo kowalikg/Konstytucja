@@ -28,25 +28,16 @@ public class ArgumentParser {
 
     public ArgumentParser(String[] args){
         this.argsToValidate = Arrays.copyOf(args, args.length);
-
-        System.out.println(Arrays.toString(argsToValidate));
     }
     public Option validateArgs() throws IllegalArgumentException, NullPointerException{
 
         if (argsToValidate.length > 3 || argsToValidate.length < 1){
             throw new IllegalArgumentException("Arguments should be between 1 and 3");
         }
-
         if (validateFilePath() && (validateNr())){
             return option;
         }
         return Option.UNDEFINED;
-
-        /*
-        sprawdz poprawnosc argumentow (ilosc, typ, zakres)
-        zrzutuj na int jeśli poprawne
-        pokaz opcje (0,1,2,3)
-         */
     }
 
     private boolean validateFilePath() throws IllegalArgumentException{
@@ -57,54 +48,43 @@ public class ArgumentParser {
         Matcher m = r.matcher(filePath);
 
         if (m.find()){
-            System.out.println(m.group(1));
             return true;
         }
-        else
-        {
-            System.out.println("źle");
-            throw new IllegalArgumentException("Zła ścieżka do pliku");
-        }
+        throw new IllegalArgumentException("Zła ścieżka do pliku");
     }
     private boolean validateNr() throws IllegalArgumentException, NullPointerException{
 
-        if (argsToValidate.length > 1){
+        if (argsToValidate.length >= 2){
             try{
                 fromArticle = Integer.parseInt(argsToValidate[1]);
-                System.out.println(fromArticle);
-                option = Option.SINGLE_ARTICLE;
             }
             catch (NumberFormatException e){
-                System.out.println("rzymska");
                 romanianChapterNr = argsToValidate[1];
-                option = Option.CHAPTER;
-                if (validateChapter())
+
+                if (validateChapter()){
+                    option = Option.CHAPTER;
+                }
                 return true;
             }
         }
-        else{
-            option = Option.UNDEFINED;
-            throw new IllegalArgumentException("No number.");
-        }
-        if (argsToValidate.length > 2){
-            toArticle = Integer.parseInt(argsToValidate[2]);
-            option = Option.MANY_ARTICLES;
-            System.out.println(toArticle);
-        }
-
         if (argsToValidate.length == 2){
-            if (validateOneArticle())
+
+            if (validateOneArticle()){
+                option = Option.SINGLE_ARTICLE;
                 return true;
-            else
-                return false;
+            }
         }
         else if (argsToValidate.length == 3){
-            if (validateMoreArticles())
+
+            toArticle = Integer.parseInt(argsToValidate[2]);
+
+            if (validateMoreArticles()){
+                option = Option.MANY_ARTICLES;
                 return true;
-            else
-                return false;
+            }
         }
-        return false;
+        option = Option.UNDEFINED;
+        throw new IllegalArgumentException("No number.");
     }
 
     private boolean validateOneArticle() throws IllegalArgumentException{
@@ -125,12 +105,10 @@ public class ArgumentParser {
         generateRomanianMap();
 
         arabicChapterNr = romanianMap.get(romanianChapterNr);
-        System.out.println(arabicChapterNr);
 
         return true;
 
     }
-
     private void generateRomanianMap() {
         romanianMap.put("I", 1);
         romanianMap.put("II", 2);
@@ -150,9 +128,6 @@ public class ArgumentParser {
     public String getPath(){
         return filePath;
     }
-    public Option getOption(){
-        return option;
-    };
     public int getFromArticle(){
         return fromArticle;
     }

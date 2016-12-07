@@ -1,11 +1,12 @@
 package dokumentyPrawne;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Created by Gabrysia on 02.12.2016.
  */
-public class Article implements Podzielalne {
+public class Article implements Dividable {
 
     private int articleNr;
 
@@ -18,7 +19,11 @@ public class Article implements Podzielalne {
     @Override
     public void show() {
         System.out.println("Art " + articleNr + ".");
-        System.out.println(subsections.toString());
+        Iterator i = subsections.iterator();
+        while(i.hasNext()){
+            String s = (String) i.next();
+            System.out.println(s);
+        }
     }
 
     @Override

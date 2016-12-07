@@ -3,7 +3,7 @@ package dokumentyPrawne;
 /**
  * Created by Gabrysia on 02.12.2016.
  */
-public interface Podzielalne {
+public interface Dividable {
 
     public void show();
         /*
