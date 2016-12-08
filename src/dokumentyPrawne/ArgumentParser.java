@@ -50,7 +50,7 @@ public class ArgumentParser {
         if (m.find()){
             return true;
         }
-        throw new IllegalArgumentException("Zła ścieżka do pliku");
+        throw new IllegalArgumentException("Invalid file path");
     }
     private boolean validateNr() throws IllegalArgumentException, NullPointerException{
 
@@ -84,7 +84,7 @@ public class ArgumentParser {
             }
         }
         option = Option.UNDEFINED;
-        throw new IllegalArgumentException("No number.");
+        throw new IllegalArgumentException("Illegal arguments");
     }
 
     private boolean validateOneArticle() throws IllegalArgumentException{

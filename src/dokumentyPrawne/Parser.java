@@ -46,7 +46,6 @@ public class Parser {
 
     private String subsectionPattern = "^(\\d+)[\\.|\\)]";
 
-
     public Parser(Option option, String filePath, int articleNr){
         this.option = option;
         this.filePath = filePath;
