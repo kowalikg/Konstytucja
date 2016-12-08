@@ -25,8 +25,12 @@ public class Parser {
     private FileReader fileReader;
     private BufferedReader bufferedReader;
 
+    //parser musi wiedzieć w której lini jest obecnie
     private String currentLine = null;
+    //wynik który będziemy wrzucać do artykułu
+    private String result = "";
 
+    //paterny do regexów
     private Pattern articlePattern;
     private Matcher articleMatcher;
 
@@ -36,8 +40,7 @@ public class Parser {
     private Pattern sectionPattern;
     private Matcher sectionMatcher;
 
-    private String result = "";
-
+    //regexy
     private String chapterStart = "^Rozdział ";
     private String articleStart = "^Art. ";
 
@@ -63,7 +66,7 @@ public class Parser {
         this.toArticle = toArticle;
         this.articleNr = fromArticle;
     }
-
+    //głowna metoda zwraca artykuł, rozdział bądź listę artykułów
     public Dividable parse() throws IOException {
         fileReader = new FileReader(filePath);
         bufferedReader = new BufferedReader(fileReader);
@@ -79,21 +82,26 @@ public class Parser {
 
         throw new IOException();
     }
-
+    // sparsuj pojedynczy artykuł
     private Article parseSingleArticle() throws IOException {
+        //ustaw currentLine na początek pliku
         currentLine = bufferedReader.readLine();
+        //przenieś linię do pożądanego artykułu
         switchToArticle(articleNr);
-
+        //przeparsuj go
         return parseArticle();
     }
 
     private Chapter parseChapter() throws IOException{
+        //ustaw currentLine do żądanego rozdziału
         switchToStartChapter();
 
         Chapter chapter = new Chapter(chapterNr);
 
+        //ustal numer pierwszego artykułu
         setFirstArticleNr();
 
+        //parsuj artykuły dopóki nie skończy się konstytucja albo nie zacznie się nowy rozdział
         do{
             Article article = parseArticle();
             chapter.push(article);
@@ -104,14 +112,17 @@ public class Parser {
     }
 
     private ArticleList parseManyArticles() throws IOException {
-
+        // to samo co przy pojedyńczym
         currentLine = bufferedReader.readLine();
         switchToArticle(fromArticle);
+
         ArticleList list = new ArticleList();
 
         for (int i = fromArticle; i <= toArticle; i++){
             Article article = parseArticle();
             list.push(article);
+            //jeżeli konstytucja się nie skończyła a obecna linia nie równa się wzorcowi nowego artykułu
+            // np. jest podtytułem to przesuń currentLine do nowego artykułu
             if (currentLine != null && !currentLine.equals("Art. " + articleNr + ".")){
                 switchToArticle(articleNr);
             }
@@ -119,9 +130,10 @@ public class Parser {
         return list;
     }
     private Article parseArticle() throws IOException{
-
+        //stwórz nowy artykuł i ustaw numer następnego artykułu
         Article article = new Article(articleNr++);
 
+        //flagi do sprawdzenia końca artykułu/podpunktu
         boolean endOfArticleFound = false;
         boolean sectionFound = false;
 
@@ -150,26 +162,27 @@ public class Parser {
                 endOfArticleFound = articleMatcher.find();
                 sectionFound = sectionMatcher.find();
 
-                // jezeli nie ma sekcji - nie pasuje do wzorca sekcji i nie zakonczyl sie jeszcze artykul
+                // jezeli nie ma sekcji - nie pasuje do wzorca sekcji i nie zakonczyl sie jeszcze artykul ani rozdział
                 if (!ifBeginOfChapter() && !sectionFound && !endOfArticleFound && ifAddLineToResult()){
                     if (giveEnter){
                         currentLine = currentLine.replaceFirst(" ", "\n");
                     }
                     giveEnter = ifParsedLineBreak();
                 }
+                // jeżeli znaleziono nową sekcję to wrzuć ją do artykułu
                 if (!ifBeginOfChapter() && sectionFound && !endOfArticleFound && ifAddLineToResult()) {
                     article.push(result);
                     result = "";
                     giveEnter = ifParsedLineBreak();
                 }
             }
-        }
+        }//dopóki plik/artykuł/rozdział się nie skończy
         while(currentLine != null && !endOfArticleFound && !ifBeginOfChapter());
         article.push(result);
         result = "";
         return article;
     }
-
+    //przenieś currentLine na żądany rozdział
     private void switchToStartChapter() throws IOException{
         String startChapterPattern = chapterStart + chapterNr + chapterEnd;
         chapterPattern = Pattern.compile(startChapterPattern);
@@ -182,22 +195,25 @@ public class Parser {
     }
 
     private void switchToArticle(int number) throws IOException{
-        //uruchamiamy pattern do znalezienia pozadanego artykulu
+        /*uruchamiamy pattern do znalezienia pozadanego artykulu
+        w głównych metodach parseSingle/ManyArticle[s] przełączamy currentLine na pierwszą linię pliku
+        a nie tutaj ze względu na to że tej metody używamy również wewnątrz pliku
+        */
+
         String startArticlePattern = articleStart + number + articleEnd;
 
         articlePattern = Pattern.compile(startArticlePattern);
         articleMatcher = articlePattern.matcher(currentLine);
 
-        if (!articleMatcher.find()){
-            // dopoki nie znajdzie pasujacego artykulu niech przelatuje po pliku
-            do {
-                currentLine = bufferedReader.readLine();
-                articleMatcher = articlePattern.matcher(currentLine);
-            }
-            while (!articleMatcher.find());
+        // dopoki nie znajdzie pasujacego artykulu niech przelatuje po pliku
+        do {
+            currentLine = bufferedReader.readLine();
+            articleMatcher = articlePattern.matcher(currentLine);
         }
+        while (!articleMatcher.find());
     }
     private void setFirstArticleNr() throws IOException {
+        //ustal który artykuł jest pierwszym do wyświetlenia
         String nextArticlePattern = articleStart + "\\d+" + articleEnd;
 
         articlePattern = Pattern.compile(nextArticlePattern);
@@ -209,7 +225,7 @@ public class Parser {
         while (!articleMatcher.find());
         articleNr = Integer.parseInt(currentLine.substring(5, currentLine.length()-1));
     }
-
+    //sprawdź czy nie currentLine nie jest na początku rozdziału
     private boolean ifBeginOfChapter(){
         String beginOfChapterPattern = chapterStart + "(.+)" + chapterEnd;
         chapterPattern = Pattern.compile(beginOfChapterPattern);
@@ -217,7 +233,7 @@ public class Parser {
 
         return chapterMatcher.find();
     }
-
+    //pomiń niepotrzebne tytuły
     private boolean ifAddLineToResult(){
         String date = "^\\d\\d\\d\\d-\\d\\d-\\d\\d$";
         String goverment = "^©Kancelaria Sejmu$";
